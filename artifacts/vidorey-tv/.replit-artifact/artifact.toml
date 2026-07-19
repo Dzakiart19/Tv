@@ -1,0 +1,23 @@
+kind = "mobile"
+previewPath = "/"
+title = "Vidorey TV"
+version = "1.0.0"
+id = "artifacts/vidorey-tv"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/" ]
+localPort = 24593
+
+[services.development]
+run = "pnpm --filter @workspace/vidorey-tv run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/vidorey-tv", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/vidorey-tv", "run", "serve" ]
+
+[services.env]
+PORT = "24593"
+BASE_PATH = "/"

@@ -1,3 +1,10 @@
 modules = ["python-base-3.13", "nodejs-24"]
 [agent]
 expertMode = true
+
+[workflows]
+runButton = "Project"
+
+[[ports]]
+localPort = 24593
+externalPort = 80

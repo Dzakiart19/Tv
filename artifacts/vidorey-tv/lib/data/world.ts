@@ -1,0 +1,68 @@
+import type { Channel } from '../types/channel';
+
+export const worldChannels: Channel[] = [
+  {
+    id: 'sky-news-arabia',
+    name: 'Sky News Arabia',
+    tagline: 'Breaking News',
+    url: 'https://stream.skynewsarabia.com/hls/sna_720.m3u8',
+    type: 'hls',
+    category: 'world',
+  },
+  {
+    id: 'fox-news',
+    name: 'FOX News',
+    tagline: 'Fair & Balanced',
+    url: 'https://fox-foxnewsnow-samsungus-tsv2-hm6vl.amagi.tv/playlist.m3u8',
+    type: 'hls',
+    category: 'world',
+  },
+  {
+    id: 'africa24',
+    name: 'Africa 24',
+    tagline: 'Africa News Network',
+    url: 'https://edge12.vedge.infomaniak.com/livecast/ik:africa24/manifest.m3u8',
+    type: 'hls',
+    category: 'world',
+  },
+  {
+    id: 'astro-awani',
+    name: 'Astro Awani',
+    tagline: 'Malaysia News 24/7',
+    url: 'https://d2idp3hzkhjpih.cloudfront.net/out/v1/4b85d9c2bf97413eb0c9fd875599b837/index.m3u8',
+    type: 'hls',
+    category: 'world',
+  },
+  {
+    id: 'cnn-ukraine',
+    name: 'CNN Ukraine',
+    tagline: 'Ukraine News',
+    url: 'https://turnerlive.warnermediacdn.com/hls/live/586495/cnngo/CNN_iOS/master_1124.m3u8',
+    type: 'hls',
+    category: 'world',
+  },
+  {
+    id: 'zoo-moo',
+    name: 'Zoo Moo',
+    tagline: 'Animal & Kids',
+    url: 'https://zoomoo-samsungau.amagi.tv/playlist.m3u8',
+    type: 'hls',
+    category: 'world',
+  },
+  {
+    id: '20min-tv',
+    name: '20 Minutes TV',
+    tagline: 'France Free News',
+    url: 'https://lives.digiteka.com/stream/86d3e867-a272-496b-8412-f59aa0104771/index.m3u8',
+    type: 'hls',
+    category: 'world',
+  },
+  {
+    id: 'hala-london',
+    name: 'Hala London',
+    tagline: 'Arabic London TV',
+    url: 'https://halalondon-live.ercdn.net/halalondon/halalondon.m3u8',
+    type: 'hls',
+    category: 'world',
+  },
+];

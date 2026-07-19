@@ -1,0 +1,68 @@
+import type { Channel } from '../types/channel';
+
+export const koreaChannels: Channel[] = [
+  {
+    id: 'arirang',
+    name: 'Arirang TV',
+    tagline: 'Korea for the World',
+    url: 'http://amdlive-ch01.ctnd.com.edgesuite.net/arirang_1ch/smil:arirang_1ch.smil/playlist.m3u8',
+    type: 'hls',
+    category: 'korea',
+  },
+  {
+    id: 'arirang-radio',
+    name: 'Arirang Radio',
+    tagline: 'Korea Radio International',
+    url: 'http://amdlive-ch01.ctnd.com.edgesuite.net/arirang_3ch/smil:arirang_3ch.smil/playlist.m3u8',
+    type: 'hls',
+    category: 'korea',
+  },
+  {
+    id: 'ebs1',
+    name: 'EBS 1',
+    tagline: 'Educational Broadcasting',
+    url: 'http://ebsonair.ebs.co.kr/ebs1familypc/familypc1m/playlist.m3u8',
+    type: 'hls',
+    category: 'korea',
+  },
+  {
+    id: 'ebs-plus1',
+    name: 'EBS Plus 1',
+    tagline: 'EBS Premium',
+    url: 'http://ebsonair.ebs.co.kr/plus1familypc/familypc1m/playlist.m3u8',
+    type: 'hls',
+    category: 'korea',
+  },
+  {
+    id: 'ebs-plus2',
+    name: 'EBS Plus 2',
+    tagline: 'EBS Premium 2',
+    url: 'http://ebsonair.ebs.co.kr/plus2familypc/familypc1m/playlist.m3u8',
+    type: 'hls',
+    category: 'korea',
+  },
+  {
+    id: 'ebs-kids',
+    name: 'EBS Kids',
+    tagline: 'Kids Education',
+    url: 'http://ebsonair.ebs.co.kr/ebsufamilypc/familypc1m/playlist.m3u8',
+    type: 'hls',
+    category: 'korea',
+  },
+  {
+    id: 'gugbang-tv',
+    name: 'Gugbang TV',
+    tagline: 'Korea Defense',
+    url: 'http://mediaworks.dema.mil.kr:1935/live_edge/cudo.sdp/playlist.m3u8',
+    type: 'hls',
+    category: 'korea',
+  },
+  {
+    id: 'mbc',
+    name: 'MBC',
+    tagline: 'Munhwa Broadcasting Corp',
+    url: 'https://ns1.tjmbc.co.kr/live/myStream.sdp/playlist.m3u8',
+    type: 'hls',
+    category: 'korea',
+  },
+];

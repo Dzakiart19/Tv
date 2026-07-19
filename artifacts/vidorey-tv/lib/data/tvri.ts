@@ -1,0 +1,38 @@
+import type { Channel } from '../types/channel';
+
+const BASE = 'https://ott-balancer.tvri.go.id/live/eds';
+
+export const tvriChannels: Channel[] = [
+  { id: 'tvri-nasional', name: 'TVRI Nasional', url: `${BASE}/Nasional/hls/Nasional.m3u8`, type: 'hls', category: 'tvri', tagline: 'Siaran Nasional' },
+  { id: 'tvri-dki', name: 'TVRI DKI Jakarta', url: `${BASE}/DKI/hls/DKI.m3u8`, type: 'hls', category: 'tvri', tagline: 'DKI Jakarta' },
+  { id: 'tvri-jabar', name: 'TVRI Jabar', url: `${BASE}/Jabar/hls/Jabar.m3u8`, type: 'hls', category: 'tvri', tagline: 'Jawa Barat' },
+  { id: 'tvri-jateng', name: 'TVRI Jateng', url: `${BASE}/Jateng/hls/Jateng.m3u8`, type: 'hls', category: 'tvri', tagline: 'Jawa Tengah' },
+  { id: 'tvri-jatim', name: 'TVRI Jatim', url: `${BASE}/Jatim/hls/Jatim.m3u8`, type: 'hls', category: 'tvri', tagline: 'Jawa Timur' },
+  { id: 'tvri-jogja', name: 'TVRI Yogyakarta', url: `${BASE}/Jogjakarta/hls/Jogjakarta.m3u8`, type: 'hls', category: 'tvri', tagline: 'D.I. Yogyakarta' },
+  { id: 'tvri-bali', name: 'TVRI Bali', url: `${BASE}/Bali/hls/Bali.m3u8`, type: 'hls', category: 'tvri', tagline: 'Bali' },
+  { id: 'tvri-aceh', name: 'TVRI Aceh', url: `${BASE}/Aceh/hls/Aceh.m3u8`, type: 'hls', category: 'tvri', tagline: 'Provinsi Aceh' },
+  { id: 'tvri-sumut', name: 'TVRI Sumut', url: `${BASE}/Sumut/hls/Sumut.m3u8`, type: 'hls', category: 'tvri', tagline: 'Sumatera Utara' },
+  { id: 'tvri-sumbar', name: 'TVRI Sumbar', url: `${BASE}/Sumbar/hls/Sumbar.m3u8`, type: 'hls', category: 'tvri', tagline: 'Sumatera Barat' },
+  { id: 'tvri-sumsel', name: 'TVRI Sumsel', url: `${BASE}/Sumsel/hls/Sumsel.m3u8`, type: 'hls', category: 'tvri', tagline: 'Sumatera Selatan' },
+  { id: 'tvri-riau', name: 'TVRI Riau', url: `${BASE}/Riau/hlstl/Riau.m3u8`, type: 'hls', category: 'tvri', tagline: 'Provinsi Riau' },
+  { id: 'tvri-lampung', name: 'TVRI Lampung', url: `${BASE}/Lampung/hls/Lampung.m3u8`, type: 'hls', category: 'tvri', tagline: 'Lampung' },
+  { id: 'tvri-babel', name: 'TVRI Babel', url: `${BASE}/Babel/hls/Babel.m3u8`, type: 'hls', category: 'tvri', tagline: 'Bangka Belitung' },
+  { id: 'tvri-bengkulu', name: 'TVRI Bengkulu', url: `${BASE}/Bengkulu/hls/Bengkulu.m3u8`, type: 'hls', category: 'tvri', tagline: 'Bengkulu' },
+  { id: 'tvri-kalbar', name: 'TVRI Kalbar', url: `${BASE}/Kalbar/hls/Kalbar.m3u8`, type: 'hls', category: 'tvri', tagline: 'Kalimantan Barat' },
+  { id: 'tvri-kalsel', name: 'TVRI Kalsel', url: `${BASE}/Kalsel/hls/Kalsel.m3u8`, type: 'hls', category: 'tvri', tagline: 'Kalimantan Selatan' },
+  { id: 'tvri-kalteng', name: 'TVRI Kalteng', url: `${BASE}/Kalteng/hls/Kalteng.m3u8`, type: 'hls', category: 'tvri', tagline: 'Kalimantan Tengah' },
+  { id: 'tvri-kaltim', name: 'TVRI Kaltim', url: `${BASE}/Kaltim/hls/Kaltim.m3u8`, type: 'hls', category: 'tvri', tagline: 'Kalimantan Timur' },
+  { id: 'tvri-sulsel', name: 'TVRI Sulsel', url: `${BASE}/Sulsel/hls/Sulsel.m3u8`, type: 'hls', category: 'tvri', tagline: 'Sulawesi Selatan' },
+  { id: 'tvri-sulteng', name: 'TVRI Sulteng', url: `${BASE}/Sulteng/hls/Sulteng.m3u8`, type: 'hls', category: 'tvri', tagline: 'Sulawesi Tengah' },
+  { id: 'tvri-sultra', name: 'TVRI Sultra', url: `${BASE}/Sultra/hls/Sultra.m3u8`, type: 'hls', category: 'tvri', tagline: 'Sulawesi Tenggara' },
+  { id: 'tvri-sulut', name: 'TVRI Sulut', url: `${BASE}/Sulut/hls/Sulut.m3u8`, type: 'hls', category: 'tvri', tagline: 'Sulawesi Utara' },
+  { id: 'tvri-sulbar', name: 'TVRI Sulbar', url: `${BASE}/Sulbar/hls/Sulbar.m3u8`, type: 'hls', category: 'tvri', tagline: 'Sulawesi Barat' },
+  { id: 'tvri-gorontalo', name: 'TVRI Gorontalo', url: `${BASE}/Gorontalo/hls/Gorontalo.m3u8`, type: 'hls', category: 'tvri', tagline: 'Gorontalo' },
+  { id: 'tvri-ambon', name: 'TVRI Ambon', url: `${BASE}/Ambon/hls/Ambon.m3u8`, type: 'hls', category: 'tvri', tagline: 'Maluku' },
+  { id: 'tvri-papua', name: 'TVRI Papua', url: `${BASE}/Papua/hls/Papua.m3u8`, type: 'hls', category: 'tvri', tagline: 'Papua' },
+  { id: 'tvri-pabar', name: 'TVRI Papua Barat', url: `${BASE}/Pabar/hls/Pabar.m3u8`, type: 'hls', category: 'tvri', tagline: 'Papua Barat' },
+  { id: 'tvri-ntb', name: 'TVRI NTB', url: `${BASE}/NTB/hls/NTB.m3u8`, type: 'hls', category: 'tvri', tagline: 'Nusa Tenggara Barat' },
+  { id: 'tvri-ntt', name: 'TVRI NTT', url: `${BASE}/NTT/hls/NTT.m3u8`, type: 'hls', category: 'tvri', tagline: 'Nusa Tenggara Timur' },
+  { id: 'tvri-jambi', name: 'TVRI Jambi', url: `${BASE}/Jambi/hls/Jambi.m3u8`, type: 'hls', category: 'tvri', tagline: 'Jambi' },
+  { id: 'tvri-world', name: 'TVRI World', url: `${BASE}/TVRIWorld/hls/TVRIWorld.m3u8`, type: 'hls', category: 'tvri', tagline: 'International' },
+];

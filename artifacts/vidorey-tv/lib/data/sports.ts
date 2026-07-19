@@ -1,0 +1,68 @@
+import type { Channel } from '../types/channel';
+
+export const sportsChannels: Channel[] = [
+  {
+    id: 'redbull-tv',
+    name: 'Red Bull TV',
+    tagline: 'Extreme Sports & Music',
+    url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master_3360.m3u8',
+    type: 'hls',
+    category: 'sports',
+  },
+  {
+    id: 'spotv1',
+    name: 'SPOTV 1',
+    tagline: 'Sports Indonesia',
+    url: 'https://cdn09jtedge.indihometv.com/joss/133/beib1/index.m3u8',
+    type: 'hls',
+    category: 'sports',
+  },
+  {
+    id: 'spotv2',
+    name: 'SPOTV 2',
+    tagline: 'Sports Indonesia 2',
+    url: 'https://cdn09jtedge.indihometv.com/joss/133/beib2/index.m3u8',
+    type: 'hls',
+    category: 'sports',
+  },
+  {
+    id: 'real-madrid-tv',
+    name: 'Real Madrid TV',
+    tagline: 'Hala Madrid',
+    url: 'https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8',
+    type: 'hls',
+    category: 'sports',
+  },
+  {
+    id: 'oman-sports',
+    name: 'Oman Sports',
+    tagline: 'Sultanate of Oman',
+    url: 'https://partneta.cdn.mgmlcdn.com/omsport/smil:omsport.stream.smil/index.m3u8',
+    type: 'hls',
+    category: 'sports',
+  },
+  {
+    id: 'bahrain-sports1',
+    name: 'Bahrain Sports 1',
+    tagline: 'Kingdom of Bahrain',
+    url: 'https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8',
+    type: 'hls',
+    category: 'sports',
+  },
+  {
+    id: 'bahrain-sports2',
+    name: 'Bahrain Sports 2',
+    tagline: 'Kingdom of Bahrain',
+    url: 'https://5c7b683162943.streamlock.net/live/ngrp:bahrainsports2_all/playlist.m3u8',
+    type: 'hls',
+    category: 'sports',
+  },
+  {
+    id: 'kuwait-sport',
+    name: 'Kuwait Sport',
+    tagline: 'State of Kuwait',
+    url: 'https://kwtspta.cdn.mangomolo.com/sp/smil:sp.stream.smil/index.m3u8',
+    type: 'hls',
+    category: 'sports',
+  },
+];

@@ -1,0 +1,1 @@
+- [Vidorey TV stack & data](vidorey-tv.md) — Expo 54 mobile app with 67 live HLS channels; key gotchas: catalog: deps, apostrophe in JSX strings, useNativeDriver on web
