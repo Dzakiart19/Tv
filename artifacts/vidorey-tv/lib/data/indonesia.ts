@@ -1,22 +1,11 @@
 import type { Channel } from '../types/channel';
 
+// These are known-public fallback URLs only.
+// IndiHome CDN (cdn09jtedge.indihometv.com) URLs are deliberately excluded —
+// they require an active IndiHome subscription and return HTML instead of M3U8.
+// Live data is fetched from iptv-org or duktek.id at runtime.
+
 export const indonesiaChannels: Channel[] = [
-  {
-    id: 'indosiar',
-    name: 'Indosiar',
-    tagline: 'Sinema Indonesia',
-    url: 'https://cdn09jtedge.indihometv.com/atm/hlsv3/indosiar/indosiar-avc1_1200000=4-mp4a.40.2_192000=2.m3u8',
-    type: 'hls',
-    category: 'indonesia',
-  },
-  {
-    id: 'sctv',
-    name: 'SCTV',
-    tagline: 'Satu Cinta Televisi',
-    url: 'https://cdn09jtedge.indihometv.com/atm/hlsv3/sctv/sctv-avc1_1200000=4-mp4a.40.2_192000=2.m3u8',
-    type: 'hls',
-    category: 'indonesia',
-  },
   {
     id: 'trans7',
     name: 'Trans7',
@@ -30,6 +19,14 @@ export const indonesiaChannels: Channel[] = [
     name: 'TransTV',
     tagline: 'Milik Kita Bersama',
     url: 'https://livestream.transtv.co.id/stream/live/ttv.m3u8',
+    type: 'hls',
+    category: 'indonesia',
+  },
+  {
+    id: 'metro-tv',
+    name: 'Metro TV',
+    tagline: 'Knowledge to Elevate',
+    url: 'https://www.metrotvnews.com/uploads/stream.m3u8',
     type: 'hls',
     category: 'indonesia',
   },
@@ -50,42 +47,10 @@ export const indonesiaChannels: Channel[] = [
     category: 'indonesia',
   },
   {
-    id: 'tv9-nusantara',
-    name: 'TV9 Nusantara',
-    tagline: 'Islam Nusantara',
-    url: 'http://5bf7b725107e5.streamlock.net/tv9/tv9/playlist.m3u8',
-    type: 'hls',
-    category: 'indonesia',
-  },
-  {
-    id: 'bandung-tv',
-    name: 'Bandung TV',
-    tagline: 'TV Lokal Bandung',
-    url: 'http://202.150.153.254:65500/bandungtvWEBSITE.m3u8',
-    type: 'hls',
-    category: 'indonesia',
-  },
-  {
-    id: 'banten-tv',
-    name: 'Banten TV',
-    tagline: 'TV Lokal Banten',
-    url: 'http://5bf7b725107e5.streamlock.net/bantentv/bantentv/playlist.m3u8',
-    type: 'hls',
-    category: 'indonesia',
-  },
-  {
     id: 'rctv-cirebon',
     name: 'RCTV Cirebon',
     tagline: 'Radar Cirebon TV',
     url: 'https://v10.siar.us/rctv/live/playlist.m3u8',
-    type: 'hls',
-    category: 'indonesia',
-  },
-  {
-    id: 'ug-tv',
-    name: 'UG.tv',
-    tagline: 'Universitas Gunadarma',
-    url: 'https://cdn.gunadarma.ac.id/streams/ugtv/ingestugtv.m3u8',
     type: 'hls',
     category: 'indonesia',
   },

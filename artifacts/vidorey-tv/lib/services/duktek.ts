@@ -1,13 +1,15 @@
 /**
- * Duktek.id API service
- * Reverse-engineered from base.apk (com.live_streaming_tv.online_tv)
+ * Channel data sources — ordered by priority:
+ * 1. duktek.id (original APK backend — may fail if is_genuine hash is wrong)
+ * 2. iptv-org Indonesian playlist (public, community-maintained, always updated)
+ * 3. Static fallback in lib/data/
  */
 
 const BASE_URL = 'https://duktek.id';
 const DEVICE = 'bittvnew';
 const IS_GENUINE = '1';
 
-const HEADERS = {
+const BROWSER_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
   'Referer': `${BASE_URL}/`,
@@ -18,47 +20,52 @@ const HEADERS = {
 export interface DuktekConfig {
   channel_list_url?: string;
   premium_channel_list_url?: string;
-  channel_administrator_url?: string;
-  countrylist?: unknown;
-  full_url_iklan?: string;
-  durasi_jeda_iklan_init?: number;
-  durasi_jeda_iklan_pindah_channel?: number;
-  durasi_jeda_iklan_putar_video?: number;
-  link_bio?: string;
-  link_buymeacoffee?: string;
-  link_saweria?: string;
-  url_saweria?: string;
   [key: string]: unknown;
 }
 
-/**
- * Fetch app config from duktek.id
- * URL: https://duktek.id/?device=bittvnew&is_genuine=1
- */
+/** Fetch app config from duktek.id */
 export async function fetchDuktekConfig(): Promise<DuktekConfig> {
   const url = `${BASE_URL}/?device=${DEVICE}&is_genuine=${IS_GENUINE}`;
   const response = await fetch(url, {
-    headers: HEADERS,
+    headers: BROWSER_HEADERS,
     signal: AbortSignal.timeout(10_000),
   });
-  if (!response.ok) {
-    throw new Error(`Config fetch failed: HTTP ${response.status}`);
+  if (!response.ok) throw new Error(`Config fetch failed: HTTP ${response.status}`);
+  const json = await response.json() as Record<string, unknown>;
+  // Validate it actually looks like a config (not an HTML error page)
+  if (!json.channel_list_url && !json.premium_channel_list_url) {
+    throw new Error('Config response missing channel_list_url');
   }
-  return response.json() as Promise<DuktekConfig>;
+  return json as DuktekConfig;
+}
+
+/** Fetch channel list M3U/JSON from the duktek config URL */
+export async function fetchChannelList(channelListUrl: string): Promise<string> {
+  const response = await fetch(channelListUrl, {
+    headers: { ...BROWSER_HEADERS, 'Referer': `${BASE_URL}/` },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!response.ok) throw new Error(`Channel list fetch failed: HTTP ${response.status}`);
+  return response.text();
 }
 
 /**
- * Fetch channel list from the URL provided in config.
- * The APK appends '.json' when fetching channel metadata,
- * but the main playlist may be M3U or JSON.
+ * iptv-org public IPTV playlists — community-maintained, verified streams.
+ * These are the fallback when duktek.id is unavailable.
  */
-export async function fetchChannelList(channelListUrl: string): Promise<string> {
-  const response = await fetch(channelListUrl, {
-    headers: { ...HEADERS, 'Referer': `${BASE_URL}/` },
+export const IPTV_ORG_PLAYLISTS = {
+  // Full Indonesian channel list (Indosiar, SCTV, Trans7, MetroTV, TVONE, etc.)
+  indonesia: 'https://iptv-org.github.io/iptv/countries/id.m3u',
+  // Korean channels (KBS, MBC, SBS, Arirang, etc.)
+  korea: 'https://iptv-org.github.io/iptv/countries/kr.m3u',
+  // Malaysian channels
+  malaysia: 'https://iptv-org.github.io/iptv/countries/my.m3u',
+};
+
+export async function fetchIptvOrgPlaylist(url: string): Promise<string> {
+  const response = await fetch(url, {
     signal: AbortSignal.timeout(15_000),
   });
-  if (!response.ok) {
-    throw new Error(`Channel list fetch failed: HTTP ${response.status}`);
-  }
+  if (!response.ok) throw new Error(`iptv-org fetch failed: HTTP ${response.status}`);
   return response.text();
 }

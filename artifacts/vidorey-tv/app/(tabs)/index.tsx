@@ -25,7 +25,7 @@ export default function HomeScreen() {
   const featured = useFeaturedChannels();
   const rows = useCategoryRows();
   const { toggle, isFavorite } = useFavorites();
-  const { status, error, refresh } = useChannelStore();
+  const { status, source, error, refresh } = useChannelStore();
 
   return (
     <View style={styles.root}>
@@ -61,13 +61,23 @@ export default function HomeScreen() {
         {status === 'loading' && (
           <View style={styles.statusBanner}>
             <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={styles.statusText}>Memuat daftar channel terbaru…</Text>
+            <Text style={styles.statusText}>Memuat channel terbaru…</Text>
+          </View>
+        )}
+        {status === 'success' && source === 'iptv-org' && (
+          <View style={[styles.statusBanner, styles.statusOk]}>
+            <Text style={styles.statusOkText}>✓ Live — data dari iptv-org</Text>
+          </View>
+        )}
+        {status === 'success' && source === 'duktek' && (
+          <View style={[styles.statusBanner, styles.statusOk]}>
+            <Text style={styles.statusOkText}>✓ Live — data dari server</Text>
           </View>
         )}
         {status === 'error' && (
           <View style={[styles.statusBanner, styles.statusError]}>
             <Text style={styles.statusErrorText}>
-              ⚠ Gagal memuat dari server — menampilkan data lokal
+              ⚠ Gagal memuat — menampilkan channel bawaan
             </Text>
             <TouchableOpacity onPress={refresh} style={styles.retryBtn}>
               <Text style={styles.retryText}>Coba lagi</Text>

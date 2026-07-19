@@ -6,18 +6,19 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { fetchChannelList, fetchDuktekConfig } from '../services/duktek';
-import { parseChannelList } from '../utils/m3u-parser';
 import {
-  ALL_CHANNELS as STATIC_CHANNELS,
-  CATEGORY_ORDER as STATIC_ORDER,
-  CHANNELS_BY_CATEGORY as STATIC_BY_CAT,
-  getFeaturedChannels as getStaticFeatured,
-} from '../data';
+  fetchChannelList,
+  fetchDuktekConfig,
+  fetchIptvOrgPlaylist,
+  IPTV_ORG_PLAYLISTS,
+} from '../services/duktek';
+import { parseChannelList } from '../utils/m3u-parser';
+import { ALL_CHANNELS as STATIC_CHANNELS } from '../data';
 import type { CategoryId, Channel } from '../types/channel';
 import { CATEGORIES } from '../types/channel';
 
 export type LoadStatus = 'idle' | 'loading' | 'success' | 'error';
+export type DataSource = 'duktek' | 'iptv-org' | 'static';
 
 interface ChannelStore {
   channels: Channel[];
@@ -25,18 +26,12 @@ interface ChannelStore {
   byCategory: Partial<Record<CategoryId, Channel[]>>;
   categoryOrder: CategoryId[];
   status: LoadStatus;
+  source: DataSource;
   error: string | null;
-  lastFetchedAt: number | null;
   refresh: () => Promise<void>;
 }
 
 const ChannelContext = createContext<ChannelStore | null>(null);
-
-/** Derive available categories from the fetched channel list */
-function buildCategoryOrder(byCategory: Partial<Record<CategoryId, Channel[]>>): CategoryId[] {
-  const order: CategoryId[] = ['indonesia', 'tvri', 'sports', 'korea', 'world', 'malaysia', 'kids'];
-  return order.filter((id) => (byCategory[id]?.length ?? 0) > 0);
-}
 
 function groupByCategory(channels: Channel[]): Partial<Record<CategoryId, Channel[]>> {
   const result: Partial<Record<CategoryId, Channel[]>> = {};
@@ -47,81 +42,107 @@ function groupByCategory(channels: Channel[]): Partial<Record<CategoryId, Channe
   return result;
 }
 
-/** Pick featured channels — prefer known IDs, fall back to first per category */
+const CAT_ORDER: CategoryId[] = ['indonesia', 'tvri', 'sports', 'korea', 'world', 'malaysia', 'kids'];
+
+function buildCategoryOrder(byCategory: Partial<Record<CategoryId, Channel[]>>): CategoryId[] {
+  return CAT_ORDER.filter((id) => (byCategory[id]?.length ?? 0) > 0);
+}
+
 function pickFeatured(
   channelMap: Map<string, Channel>,
   byCategory: Partial<Record<CategoryId, Channel[]>>,
 ): Channel[] {
   const preferred = [
-    'tvri-nasional', 'tvri_nasional', 'tvri',
+    'tvri-nasional', 'tvri_nasional',
     'redbull-tv', 'red-bull-tv',
-    'indosiar',
+    'indosiar', 'trans7', 'transtv', 'rcti', 'sctv', 'mnc-tv',
     'arirang', 'arirang-tv',
-    'sky-news-arabia', 'al-jazeera', 'cnn-international', 'bbc-world',
+    'sky-news-arabia', 'al-jazeera', 'cnn-international',
   ];
-
   const featured: Channel[] = [];
   for (const id of preferred) {
     const ch = channelMap.get(id);
-    if (ch && !featured.includes(ch)) {
-      featured.push(ch);
-      if (featured.length >= 5) break;
-    }
+    if (ch && !featured.includes(ch)) { featured.push(ch); if (featured.length >= 5) break; }
   }
-
-  // Pad from categories if we don't have 5 yet
   if (featured.length < 5) {
-    const catOrder: CategoryId[] = ['indonesia', 'tvri', 'sports', 'korea', 'world'];
-    for (const cat of catOrder) {
-      const catChannels = byCategory[cat] ?? [];
-      for (const ch of catChannels) {
-        if (!featured.includes(ch)) {
-          featured.push(ch);
-          if (featured.length >= 5) break;
-        }
+    for (const cat of CAT_ORDER) {
+      for (const ch of byCategory[cat] ?? []) {
+        if (!featured.includes(ch)) { featured.push(ch); if (featured.length >= 5) break; }
       }
       if (featured.length >= 5) break;
     }
   }
-
   return featured.slice(0, 5);
+}
+
+/** Merge iptv-org results with static data, deduplicating by channel name */
+function mergeWithStatic(dynamic: Channel[], staticChannels: Channel[]): Channel[] {
+  const dynamicNames = new Set(dynamic.map((c) => c.name.toLowerCase().trim()));
+  const extra = staticChannels.filter((c) => !dynamicNames.has(c.name.toLowerCase().trim()));
+  return [...dynamic, ...extra];
 }
 
 export function ChannelProvider({ children }: { children: React.ReactNode }) {
   const [channels, setChannels] = useState<Channel[]>(STATIC_CHANNELS);
   const [status, setStatus] = useState<LoadStatus>('idle');
+  const [source, setSource] = useState<DataSource>('static');
   const [error, setError] = useState<string | null>(null);
-  const [lastFetchedAt, setLastFetchedAt] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     setStatus('loading');
     setError(null);
+
+    // ── 1. Try duktek.id ──────────────────────────────────────────
     try {
       const config = await fetchDuktekConfig();
-      const channelListUrl = config.channel_list_url ?? config.premium_channel_list_url;
-      if (!channelListUrl) {
-        throw new Error('No channel_list_url in config response');
-      }
-      const raw = await fetchChannelList(channelListUrl);
+      const listUrl = config.channel_list_url ?? config.premium_channel_list_url;
+      if (!listUrl) throw new Error('No channel_list_url in config');
+      const raw = await fetchChannelList(listUrl);
       const parsed = parseChannelList(raw);
-      if (parsed.length === 0) {
-        throw new Error('Channel list is empty or could not be parsed');
+      if (parsed.length > 0) {
+        setChannels(parsed);
+        setSource('duktek');
+        setStatus('success');
+        return;
       }
-      setChannels(parsed);
-      setLastFetchedAt(Date.now());
-      setStatus('success');
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setError(msg);
-      setStatus('error');
-      // Keep existing channels (static or previously fetched)
+    } catch {
+      // duktek.id failed — try iptv-org next
     }
+
+    // ── 2. Try iptv-org (Indonesia + Korea + Malaysia in parallel) ─
+    try {
+      const [idRaw, krRaw, myRaw] = await Promise.allSettled([
+        fetchIptvOrgPlaylist(IPTV_ORG_PLAYLISTS.indonesia),
+        fetchIptvOrgPlaylist(IPTV_ORG_PLAYLISTS.korea),
+        fetchIptvOrgPlaylist(IPTV_ORG_PLAYLISTS.malaysia),
+      ]);
+
+      const allDynamic: Channel[] = [];
+      for (const result of [idRaw, krRaw, myRaw]) {
+        if (result.status === 'fulfilled') {
+          allDynamic.push(...parseChannelList(result.value));
+        }
+      }
+
+      if (allDynamic.length > 0) {
+        // Merge with static (TVRI, sports, world) to fill gaps
+        const merged = mergeWithStatic(allDynamic, STATIC_CHANNELS);
+        setChannels(merged);
+        setSource('iptv-org');
+        setStatus('success');
+        return;
+      }
+    } catch {
+      // iptv-org also failed
+    }
+
+    // ── 3. Static fallback ────────────────────────────────────────
+    setSource('static');
+    setStatus('error');
+    setError('Tidak bisa memuat data terbaru. Menampilkan channel bawaan.');
   }, []);
 
-  // Auto-fetch on mount
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const channelMap = useMemo(() => {
     const map = new Map<string, Channel>();
@@ -133,28 +154,21 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
   const categoryOrder = useMemo(() => buildCategoryOrder(byCategory), [byCategory]);
 
   const store = useMemo<ChannelStore>(
-    () => ({ channels, channelMap, byCategory, categoryOrder, status, error, lastFetchedAt, refresh }),
-    [channels, channelMap, byCategory, categoryOrder, status, error, lastFetchedAt, refresh],
+    () => ({ channels, channelMap, byCategory, categoryOrder, status, source, error, refresh }),
+    [channels, channelMap, byCategory, categoryOrder, status, source, error, refresh],
   );
 
   return <ChannelContext.Provider value={store}>{children}</ChannelContext.Provider>;
 }
 
-/** Hook — use inside ChannelProvider */
 export function useChannelStore(): ChannelStore {
   const ctx = useContext(ChannelContext);
   if (!ctx) throw new Error('useChannelStore must be used inside <ChannelProvider>');
   return ctx;
 }
 
-/** Convenience helpers that mirror the old static API */
-export function useAllChannels(): Channel[] {
-  return useChannelStore().channels;
-}
-
-export function useChannelById(id: string): Channel | undefined {
-  return useChannelStore().channelMap.get(id);
-}
+export function useAllChannels(): Channel[] { return useChannelStore().channels; }
+export function useChannelById(id: string): Channel | undefined { return useChannelStore().channelMap.get(id); }
 
 export function useCategoryRows() {
   const { byCategory, categoryOrder } = useChannelStore();
