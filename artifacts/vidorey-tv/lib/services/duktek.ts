@@ -28,7 +28,7 @@ export async function fetchDuktekConfig(): Promise<DuktekConfig> {
   const url = `${BASE_URL}/?device=${DEVICE}&is_genuine=${IS_GENUINE}`;
   const response = await fetch(url, {
     headers: BROWSER_HEADERS,
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.timeout(5_000),
   });
   if (!response.ok) throw new Error(`Config fetch failed: HTTP ${response.status}`);
   const json = await response.json() as Record<string, unknown>;

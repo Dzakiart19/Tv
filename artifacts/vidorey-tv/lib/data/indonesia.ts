@@ -26,7 +26,7 @@ export const indonesiaChannels: Channel[] = [
     id: 'metro-tv',
     name: 'Metro TV',
     tagline: 'Knowledge to Elevate',
-    url: 'https://www.metrotvnews.com/uploads/stream.m3u8',
+    url: 'https://edge.medcom.id/live-edge/smil:metro.smil/playlist.m3u8',
     type: 'hls',
     category: 'indonesia',
   },
