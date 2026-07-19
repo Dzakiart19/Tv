@@ -11,9 +11,11 @@ const DEVICE = 'bittvnew';
 const IS_GENUINE = 'a6615402e505dd28666f01eefba59b7c78241d36';
 
 const BROWSER_HEADERS = {
-  // Match the WebView User-Agent the APK sends
+  // Match exactly what Android WebView sends for this APK
   'User-Agent':
     'Mozilla/5.0 (Linux; Android 12; sdk_gphone64_x86_64 Build/SE1A.220630.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/91.0.4472.114 Mobile Safari/537.36',
+  // Android WebView automatically appends the app's package name — servers use this to auth
+  'X-Requested-With': 'com.live_streaming_tv.online_tv',
   'Referer': `${BASE_URL}/`,
   'Origin': BASE_URL,
   'Accept': 'application/json, text/plain, */*',
