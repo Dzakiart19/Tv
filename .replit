@@ -1,4 +1,4 @@
-modules = ["python-base-3.13", "nodejs-24"]
+modules = ["nodejs-20", "web"]
 [agent]
 expertMode = true
 
@@ -8,3 +8,6 @@ runButton = "Project"
 [[ports]]
 localPort = 24593
 externalPort = 80
+
+[nix]
+channel = "stable-25_05"
