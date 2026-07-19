@@ -25,16 +25,20 @@ export interface DuktekConfig {
   [key: string]: unknown;
 }
 
+/** AbortController-based timeout compatible with Hermes (React Native) */
+function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 /** Fetch app config from duktek.id */
 export async function fetchDuktekConfig(): Promise<DuktekConfig> {
   const url = `${BASE_URL}/?device=${DEVICE}&is_genuine=${IS_GENUINE}`;
   console.log('[duktek] Fetching config:', url);
   let response: Response;
   try {
-    response = await fetch(url, {
-      headers: BROWSER_HEADERS,
-      signal: AbortSignal.timeout(12_000),
-    });
+    response = await fetchWithTimeout(url, { headers: BROWSER_HEADERS }, 12_000);
   } catch (e) {
     console.error('[duktek] Network error:', e instanceof Error ? e.message : String(e));
     throw e;
@@ -53,7 +57,6 @@ export async function fetchDuktekConfig(): Promise<DuktekConfig> {
     throw new Error('duktek.id response is not JSON');
   }
   console.log('[duktek] JSON keys:', Object.keys(json).join(', '));
-  // Validate it actually looks like a config (not an HTML error page)
   if (!json.channel_list_url && !json.premium_channel_list_url) {
     console.error('[duktek] Missing channel_list_url. Full response:', JSON.stringify(json).slice(0, 500));
     throw new Error('Config response missing channel_list_url');
@@ -63,31 +66,27 @@ export async function fetchDuktekConfig(): Promise<DuktekConfig> {
 
 /** Fetch channel list M3U/JSON from the duktek config URL */
 export async function fetchChannelList(channelListUrl: string): Promise<string> {
-  const response = await fetch(channelListUrl, {
-    headers: { ...BROWSER_HEADERS, 'Referer': `${BASE_URL}/` },
-    signal: AbortSignal.timeout(15_000),
-  });
+  const response = await fetchWithTimeout(
+    channelListUrl,
+    { headers: { ...BROWSER_HEADERS, 'Referer': `${BASE_URL}/` } },
+    20_000,
+  );
   if (!response.ok) throw new Error(`Channel list fetch failed: HTTP ${response.status}`);
   return response.text();
 }
 
 /**
  * iptv-org public IPTV playlists — community-maintained, verified streams.
- * These are the fallback when duktek.id is unavailable.
+ * Fallback when duktek.id is unavailable.
  */
 export const IPTV_ORG_PLAYLISTS = {
-  // Full Indonesian channel list (Indosiar, SCTV, Trans7, MetroTV, TVONE, etc.)
   indonesia: 'https://iptv-org.github.io/iptv/countries/id.m3u',
-  // Korean channels (KBS, MBC, SBS, Arirang, etc.)
   korea: 'https://iptv-org.github.io/iptv/countries/kr.m3u',
-  // Malaysian channels
   malaysia: 'https://iptv-org.github.io/iptv/countries/my.m3u',
 };
 
 export async function fetchIptvOrgPlaylist(url: string): Promise<string> {
-  const response = await fetch(url, {
-    signal: AbortSignal.timeout(15_000),
-  });
+  const response = await fetchWithTimeout(url, {}, 20_000);
   if (!response.ok) throw new Error(`iptv-org fetch failed: HTTP ${response.status}`);
   return response.text();
 }
