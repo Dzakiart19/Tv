@@ -10,6 +10,7 @@ description: Expo 54 mobile IPTV app; key gotchas and the duktek.id API pattern 
 - expo-blur (iOS tab bar), expo-linear-gradient, expo-haptics
 - @react-native-async-storage/async-storage (favorites persistence)
 - @tanstack/react-query installed but unused (ready for future)
+- expo-video 3.0.16 — in-app HLS/DASH player (requires dev build, NOT Expo Go)
 - React Compiler beta enabled
 
 ## Duktek.id API (reverse-engineered from base.apk)
@@ -31,20 +32,25 @@ Package: com.live_streaming_tv.online_tv
 **Channel list:**
   Fetch URL from channel_list_url -> M3U or JSON format
   M3U: standard #EXTM3U / #EXTINF with tvg-id, tvg-name, tvg-logo, group-title
-  Append .json to individual channel URL for metadata (APK Method J)
 
 **Stream types:** hls, dash, dash-clearkey, dash-widevine, ts
 **is_genuine value:** '1' (may be computed hash; APK method 'u' uses SHA1 + 'eksM30' key)
 
 ## Architecture
-- lib/context/ChannelContext.tsx — ChannelProvider wraps app, fetches from duktek.id on mount,
-  falls back to static data on error
+- lib/context/ChannelContext.tsx — ChannelProvider wraps app, fetches from duktek.id on mount
 - lib/services/duktek.ts — fetchDuktekConfig(), fetchChannelList()
 - lib/utils/m3u-parser.ts — parseM3U(), parseChannelList() (tries JSON then M3U)
+- app/player/[id].tsx — VideoView + useVideoPlayer from expo-video with APK headers
 - Static data in lib/data/ kept as fallback
+
+## Build requirement
+- expo-video is a native module -> MUST use development build APK, not Expo Go
+- Build command: eas build --profile development --platform android
+- Or local build with Android Studio if EAS not available
 
 ## Key gotchas
 - useNativeDriver: true works on native but causes warning on web
-- Apostrophes in JSX strings need escaping
 - tsconfig.json had stale reference to ../../lib/api-client-react — removed
-- duktek.id not accessible from Replit server (DNS blocked); requests run on device = fine
+- duktek.id not accessible from Replit server; requests run on device = fine
+- ContentType values for expo-video: 'hls' | 'dash' | 'auto' | 'progressive' | 'smoothStreaming'
+  (NOT 'application/x-mpegURL' — that's the MIME type, not the expo-video enum value)
