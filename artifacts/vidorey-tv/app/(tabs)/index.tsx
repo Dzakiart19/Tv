@@ -192,6 +192,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  statusOk: {
+    borderColor: '#4caf5044',
+    backgroundColor: 'rgba(76,175,80,0.08)',
+  },
+  statusOkText: {
+    color: '#81c784',
+    fontSize: fontSize.sm,
+    fontFamily: 'Inter_400Regular',
+  },
   statusError: {
     borderColor: '#ff4b4b44',
     backgroundColor: 'rgba(255,75,75,0.08)',

@@ -126,24 +126,40 @@ export function parseM3U(content: string): Channel[] {
       const tvgName = extractAttr(attrPart, 'tvg-name') || channelName;
       const tvgLogo = extractAttr(attrPart, 'tvg-logo');
       const groupTitle = extractAttr(attrPart, 'group-title');
+      // iptv-org uses http-referrer and http-user-agent attributes
+      const httpReferrer = extractAttr(attrPart, 'http-referrer');
+      const httpUserAgent = extractAttr(attrPart, 'http-user-agent');
 
       // Find next non-comment, non-empty line as the stream URL
+      // Also scan for #EXTVLCOPT lines that carry http-referrer
       let url = '';
+      let vlcReferrer = '';
       let j = i + 1;
       while (j < lines.length) {
         const next = lines[j].trim();
-        if (next && !next.startsWith('#')) {
-          url = next;
-          i = j; // advance outer loop
-          break;
+        if (!next) { j++; continue; }
+        if (next.startsWith('#EXTVLCOPT')) {
+          const m = /http-referrer=(.+)/.exec(next);
+          if (m) vlcReferrer = m[1].trim();
+          j++;
+          continue;
         }
-        j++;
+        if (next.startsWith('#')) { j++; continue; }
+        url = next;
+        i = j;
+        break;
       }
 
       if (!url) { i++; continue; }
 
       const displayName = tvgName || channelName || 'Unknown Channel';
       const category = inferCategory(groupTitle);
+
+      // Build per-channel headers from EXTINF/EXTVLCOPT attributes
+      const headers: Record<string, string> = {};
+      const referer = httpReferrer || vlcReferrer;
+      if (referer) headers['Referer'] = referer;
+      if (httpUserAgent) headers['User-Agent'] = httpUserAgent;
 
       // Generate stable ID
       let id = tvgId ? slugify(tvgId) : slugify(displayName);
@@ -164,6 +180,7 @@ export function parseM3U(content: string): Channel[] {
         type: inferStreamType(url),
         category,
         logo: tvgLogo || undefined,
+        ...(Object.keys(headers).length > 0 ? { headers } : {}),
       });
     }
 

@@ -17,6 +17,7 @@ export interface Channel {
   type: StreamType;
   category: CategoryId;
   logo?: string; // URL to logo image
+  headers?: Record<string, string>; // per-channel HTTP headers for the player
 }
 
 export interface Category {

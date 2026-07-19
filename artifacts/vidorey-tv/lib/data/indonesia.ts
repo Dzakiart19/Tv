@@ -7,12 +7,63 @@ import type { Channel } from '../types/channel';
 
 export const indonesiaChannels: Channel[] = [
   {
+    id: 'indosiar',
+    name: 'Indosiar',
+    tagline: 'Televisi Masa Kini',
+    url: 'https://indihuy.streamized.net/atm/DASH/indosiar/manifest.mpd',
+    type: 'dash',
+    category: 'indonesia',
+    headers: {
+      'Referer': 'https://maxstream.tv/',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+    },
+  },
+  {
+    id: 'rcti',
+    name: 'RCTI',
+    tagline: 'Rajawali Citra Televisi Indonesia',
+    url: 'https://indihuy.streamized.net/atm/DASH/rcti/manifest.mpd',
+    type: 'dash',
+    category: 'indonesia',
+    headers: {
+      'Referer': 'https://maxstream.tv/',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+    },
+  },
+  {
+    id: 'sctv',
+    name: 'SCTV',
+    tagline: 'Satu untuk Semua',
+    url: 'https://op-group1-swiftservehd-1.dens.tv/h/h217/index.m3u8',
+    type: 'hls',
+    category: 'indonesia',
+    headers: {
+      'Referer': 'https://www.dens.tv/',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+    },
+  },
+  {
+    id: 'mnctv',
+    name: 'MNCTV',
+    tagline: 'Saluran Hiburan Keluarga',
+    url: 'https://indihuy.streamized.net/atm/DASH/mnctv/manifest.mpd',
+    type: 'dash',
+    category: 'indonesia',
+    headers: {
+      'Referer': 'https://maxstream.tv/',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+    },
+  },
+  {
     id: 'trans7',
     name: 'Trans7',
     tagline: 'Referensi Terpercaya',
     url: 'https://video.detik.com/trans7/smil:trans7.smil/chunklist.m3u8',
     type: 'hls',
     category: 'indonesia',
+    headers: {
+      'Referer': 'https://www.trans7.co.id/',
+    },
   },
   {
     id: 'transtv',

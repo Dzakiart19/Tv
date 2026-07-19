@@ -23,12 +23,11 @@ import { useFavorites } from '@/lib/hooks/useFavorites';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const VIDEO_HEIGHT = Math.round((SCREEN_WIDTH * 9) / 16);
 
-// Same headers the APK sends (BitTVActivity methods A-H)
-const STREAM_HEADERS: Record<string, string> = {
+// Default headers — only User-Agent; Referer/Origin are per-channel
+// (wrong Referer causes 403 on CDNs like detik.com, dens.tv, etc.)
+const DEFAULT_STREAM_HEADERS: Record<string, string> = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
-  'Referer': 'https://duktek.id/',
-  'Origin': 'https://duktek.id',
 };
 
 export default function PlayerScreen() {
@@ -74,8 +73,9 @@ export default function PlayerScreen() {
     setStatus(null);
     await videoRef.current?.unloadAsync();
     if (channel) {
+      const headers = { ...DEFAULT_STREAM_HEADERS, ...(channel.headers ?? {}) };
       await videoRef.current?.loadAsync(
-        { uri: channel.url, headers: STREAM_HEADERS },
+        { uri: channel.url, headers },
         { shouldPlay: true },
         false,
       );
@@ -147,7 +147,7 @@ export default function PlayerScreen() {
       <View style={styles.videoWrapper}>
         <Video
           ref={videoRef}
-          source={{ uri: channel.url, headers: STREAM_HEADERS }}
+          source={{ uri: channel.url, headers: { ...DEFAULT_STREAM_HEADERS, ...(channel.headers ?? {}) } }}
           style={styles.video}
           resizeMode={ResizeMode.CONTAIN}
           shouldPlay

@@ -7,11 +7,13 @@
 
 const BASE_URL = 'https://duktek.id';
 const DEVICE = 'bittvnew';
-const IS_GENUINE = '1';
+// SHA-1 fingerprint of the APK signing certificate (extracted from APK v2 signing block)
+const IS_GENUINE = 'a6615402e505dd28666f01eefba59b7c78241d36';
 
 const BROWSER_HEADERS = {
+  // Match the WebView User-Agent the APK sends
   'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
+    'Mozilla/5.0 (Linux; Android 12; sdk_gphone64_x86_64 Build/SE1A.220630.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/91.0.4472.114 Mobile Safari/537.36',
   'Referer': `${BASE_URL}/`,
   'Origin': BASE_URL,
   'Accept': 'application/json, text/plain, */*',
