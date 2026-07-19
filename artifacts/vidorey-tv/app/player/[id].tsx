@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
-  Platform,
-  Pressable,
   Share,
   StyleSheet,
   Text,
@@ -14,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { useVideoPlayer, VideoView } from 'expo-video';
+import { Video, ResizeMode, type AVPlaybackStatus } from 'expo-av';
 import { Badge, LiveBadge } from '@/components/ui/Badge';
 import colors from '@/constants/colors';
 import { fontSize, radius, spacing } from '@/constants/theme';
@@ -23,9 +21,9 @@ import { CATEGORIES } from '@/lib/types/channel';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const VIDEO_HEIGHT = (SCREEN_WIDTH * 9) / 16; // 16:9
+const VIDEO_HEIGHT = Math.round((SCREEN_WIDTH * 9) / 16);
 
-// Same headers as APK (BitTVActivity methods A-H)
+// Same headers the APK sends (BitTVActivity methods A-H)
 const STREAM_HEADERS: Record<string, string> = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
@@ -38,43 +36,17 @@ export default function PlayerScreen() {
   const insets = useSafeAreaInsets();
   const channel = useChannelById(id ?? '');
   const { toggle, isFavorite } = useFavorites();
+
+  const videoRef = useRef<Video>(null);
+  const [status, setStatus] = useState<AVPlaybackStatus | null>(null);
   const [playerError, setPlayerError] = useState<string | null>(null);
-  const [isReady, setIsReady] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Build VideoSource with headers — same pattern as APK
-  const videoSource = channel
-    ? {
-        uri: channel.url,
-        headers: STREAM_HEADERS,
-        // For HLS streams without .m3u8 extension, hint the content type
-        ...(channel.type === 'hls'
-          ? { contentType: 'hls' as const }
-          : channel.type === 'dash'
-          ? { contentType: 'dash' as const }
-          : {}),
-      }
-    : null;
-
-  const player = useVideoPlayer(videoSource, (p) => {
-    p.loop = false;
-    p.play();
-  });
-
-  // Listen for player status & errors
-  useEffect(() => {
-    if (!player) return;
-    const sub = player.addListener('statusChange', ({ status, error }) => {
-      if (status === 'readyToPlay') {
-        setIsReady(true);
-        setPlayerError(null);
-      }
-      if (status === 'error') {
-        setPlayerError(error?.message ?? 'Stream tidak bisa dimuat');
-      }
-    });
-    return () => sub.remove();
-  }, [player]);
+  const isLoading =
+    !status ||
+    (!('isLoaded' in status && status.isLoaded) && !playerError);
+  const isPlaying =
+    status && 'isLoaded' in status && status.isLoaded && status.isPlaying;
 
   // Pulse animation for live dot
   useEffect(() => {
@@ -88,6 +60,28 @@ export default function PlayerScreen() {
     return () => pulse.stop();
   }, [pulseAnim]);
 
+  const handlePlaybackStatus = useCallback((s: AVPlaybackStatus) => {
+    setStatus(s);
+    if ('error' in s) {
+      setPlayerError(s.error ?? 'Stream tidak bisa dimuat');
+    } else {
+      setPlayerError(null);
+    }
+  }, []);
+
+  const handleRetry = useCallback(async () => {
+    setPlayerError(null);
+    setStatus(null);
+    await videoRef.current?.unloadAsync();
+    if (channel) {
+      await videoRef.current?.loadAsync(
+        { uri: channel.url, headers: STREAM_HEADERS },
+        { shouldPlay: true },
+        false,
+      );
+    }
+  }, [channel]);
+
   const handleShare = useCallback(async () => {
     if (!channel) return;
     try {
@@ -97,13 +91,6 @@ export default function PlayerScreen() {
       });
     } catch {}
   }, [channel]);
-
-  const handleRetry = useCallback(() => {
-    setPlayerError(null);
-    setIsReady(false);
-    player?.replace({ uri: channel!.url, headers: STREAM_HEADERS });
-    player?.play();
-  }, [player, channel]);
 
   if (!channel) {
     return (
@@ -151,32 +138,42 @@ export default function PlayerScreen() {
             <Feather name="share-2" size={20} color={colors.text} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconBtn} onPress={() => toggle(channel.id)}>
-            <Feather
-              name="heart"
-              size={20}
-              color={fav ? colors.live : colors.text}
-            />
+            <Feather name="heart" size={20} color={fav ? colors.live : colors.text} />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* ── Video player (16:9) ── */}
+      {/* ── Video (16:9) ── */}
       <View style={styles.videoWrapper}>
-        {/* actual player */}
-        <VideoView
-          player={player}
+        <Video
+          ref={videoRef}
+          source={{ uri: channel.url, headers: STREAM_HEADERS }}
           style={styles.video}
-          contentFit="contain"
-          nativeControls
-          allowsFullscreen
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay
+          useNativeControls
+          onPlaybackStatusUpdate={handlePlaybackStatus}
+          onError={(err) => setPlayerError(typeof err === 'string' ? err : 'Stream error')}
         />
 
-        {/* error overlay */}
+        {/* Loading overlay */}
+        {isLoading && !playerError && (
+          <View style={styles.overlay}>
+            <View style={styles.spinnerRow}>
+              <Feather name="loader" size={28} color={catColor} />
+            </View>
+            <Text style={styles.overlaySubtitle}>Memuat stream…</Text>
+          </View>
+        )}
+
+        {/* Error overlay */}
         {playerError && (
           <View style={styles.overlay}>
             <Feather name="alert-circle" size={40} color="#ff6b6b" />
             <Text style={styles.overlayTitle}>Stream Error</Text>
-            <Text style={styles.overlayMsg}>{playerError}</Text>
+            <Text style={styles.overlayMsg} numberOfLines={3}>
+              {playerError}
+            </Text>
             <TouchableOpacity style={styles.retryBtn} onPress={handleRetry}>
               <Feather name="refresh-cw" size={14} color="#fff" />
               <Text style={styles.retryText}>Coba lagi</Text>
@@ -194,10 +191,10 @@ export default function PlayerScreen() {
               styles.pulseDot,
               {
                 transform: [{ scale: pulseAnim }],
-                backgroundColor: colors.live,
+                backgroundColor: isPlaying ? colors.live : colors.textMuted,
                 opacity: pulseAnim.interpolate({
                   inputRange: [1, 1.6],
-                  outputRange: [1, 0.4],
+                  outputRange: [1, 0.3],
                 }),
               },
             ]}
@@ -208,7 +205,6 @@ export default function PlayerScreen() {
           <Badge label={channel.type.toUpperCase()} color={colors.textSecondary} size="sm" />
         </View>
 
-        {/* Name */}
         <Text style={styles.channelName}>{channel.name}</Text>
         {channel.tagline ? (
           <Text style={styles.tagline}>{channel.tagline}</Text>
@@ -272,16 +268,22 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.82)',
+    backgroundColor: 'rgba(0,0,0,0.85)',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.xl,
   },
+  spinnerRow: { marginBottom: spacing.xs },
   overlayTitle: {
     color: '#ff6b6b',
     fontSize: fontSize.lg,
     fontFamily: 'Inter_700Bold',
+  },
+  overlaySubtitle: {
+    color: colors.textSecondary,
+    fontSize: fontSize.sm,
+    fontFamily: 'Inter_400Regular',
   },
   overlayMsg: {
     color: colors.textSecondary,

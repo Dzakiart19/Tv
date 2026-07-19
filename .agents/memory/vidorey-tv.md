@@ -10,7 +10,8 @@ description: Expo 54 mobile IPTV app; key gotchas and the duktek.id API pattern 
 - expo-blur (iOS tab bar), expo-linear-gradient, expo-haptics
 - @react-native-async-storage/async-storage (favorites persistence)
 - @tanstack/react-query installed but unused (ready for future)
-- expo-video 3.0.16 — in-app HLS/DASH player (requires dev build, NOT Expo Go)
+- expo-av 16.0.8 — in-app HLS/DASH player via Video component; works in Expo Go
+- expo-video 3.0.16 also installed but NOT used (requires dev build, breaks Expo Go)
 - React Compiler beta enabled
 
 ## Duktek.id API (reverse-engineered from base.apk)
