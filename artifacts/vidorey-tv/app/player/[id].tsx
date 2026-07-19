@@ -17,14 +17,14 @@ import { Feather } from '@expo/vector-icons';
 import { Badge, LiveBadge } from '@/components/ui/Badge';
 import colors from '@/constants/colors';
 import { fontSize, radius, spacing } from '@/constants/theme';
-import { getChannelById } from '@/lib/data';
+import { useChannelById } from '@/lib/context/ChannelContext';
 import { CATEGORIES } from '@/lib/types/channel';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 
 export default function PlayerScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const channel = getChannelById(id ?? '');
+  const channel = useChannelById(id ?? '');
   const { toggle, isFavorite } = useFavorites();
   const [opening, setOpening] = useState(false);
   const [opened, setOpened] = useState(false);
@@ -57,7 +57,7 @@ export default function PlayerScreen() {
       await Linking.openURL(channel.url);
       setOpened(true);
     } catch {
-      // URL might not open directly, try with vlc:// scheme
+      // Try with vlc:// scheme as fallback (same as base APK)
       try {
         await Linking.openURL(`vlc://${channel.url}`);
         setOpened(true);
@@ -130,10 +130,9 @@ export default function PlayerScreen() {
             onPress={() => toggle(channel.id)}
           >
             <Feather
-              name={fav ? 'heart' : 'heart'}
+              name="heart"
               size={20}
               color={fav ? colors.live : colors.text}
-              // filled heart via color, feather doesn't have filled variant
             />
           </TouchableOpacity>
         </View>

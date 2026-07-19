@@ -1,8 +1,10 @@
 import React from 'react';
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,15 +13,19 @@ import { CategorySection } from '@/components/ui/CategorySection';
 import { ChannelCard } from '@/components/ui/ChannelCard';
 import colors from '@/constants/colors';
 import { fontSize, spacing } from '@/constants/theme';
-import { getFeaturedChannels } from '@/lib/data';
-import { useCategoryRows } from '@/lib/hooks/useChannels';
+import {
+  useCategoryRows,
+  useChannelStore,
+  useFeaturedChannels,
+} from '@/lib/context/ChannelContext';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const featured = getFeaturedChannels();
+  const featured = useFeaturedChannels();
   const rows = useCategoryRows();
   const { toggle, isFavorite } = useFavorites();
+  const { status, error, refresh } = useChannelStore();
 
   return (
     <View style={styles.root}>
@@ -51,27 +57,53 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Status banner */}
+        {status === 'loading' && (
+          <View style={styles.statusBanner}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={styles.statusText}>Memuat daftar channel terbaru…</Text>
+          </View>
+        )}
+        {status === 'error' && (
+          <View style={[styles.statusBanner, styles.statusError]}>
+            <Text style={styles.statusErrorText}>
+              ⚠ Gagal memuat dari server — menampilkan data lokal
+            </Text>
+            <TouchableOpacity onPress={refresh} style={styles.retryBtn}>
+              <Text style={styles.retryText}>Coba lagi</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Featured section */}
-        <Text style={styles.sectionTitle}>Featured</Text>
-        <View style={styles.featuredList}>
-          {featured.map((ch) => (
-            <ChannelCard
-              key={ch.id}
-              channel={ch}
-              variant="featured"
-              isFavorite={isFavorite(ch.id)}
-              onFavoriteToggle={toggle}
-            />
-          ))}
-        </View>
+        {featured.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Featured</Text>
+            <View style={styles.featuredList}>
+              {featured.map((ch) => (
+                <ChannelCard
+                  key={ch.id}
+                  channel={ch}
+                  variant="featured"
+                  isFavorite={isFavorite(ch.id)}
+                  onFavoriteToggle={toggle}
+                />
+              ))}
+            </View>
+          </>
+        )}
 
         {/* Category rows */}
-        <Text style={[styles.sectionTitle, { marginTop: spacing.sm }]}>
-          Browse by Category
-        </Text>
-        {rows.map(({ id, channels }) => (
-          <CategorySection key={id} categoryId={id} channels={channels} />
-        ))}
+        {rows.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { marginTop: spacing.sm }]}>
+              Browse by Category
+            </Text>
+            {rows.map(({ id, channels }) => (
+              <CategorySection key={id} categoryId={id} channels={channels} />
+            ))}
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -136,5 +168,48 @@ const styles = StyleSheet.create({
   featuredList: {
     paddingHorizontal: spacing.md,
     marginBottom: spacing.xl,
+  },
+  statusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+    backgroundColor: colors.card,
+    borderRadius: 10,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  statusError: {
+    borderColor: '#ff4b4b44',
+    backgroundColor: 'rgba(255,75,75,0.08)',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: spacing.xs,
+  },
+  statusText: {
+    color: colors.textSecondary,
+    fontSize: fontSize.sm,
+    fontFamily: 'Inter_400Regular',
+  },
+  statusErrorText: {
+    color: '#ff6b6b',
+    fontSize: fontSize.sm,
+    fontFamily: 'Inter_400Regular',
+  },
+  retryBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.primaryDim,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.primary + '44',
+  },
+  retryText: {
+    color: colors.primary,
+    fontSize: fontSize.xs,
+    fontFamily: 'Inter_600SemiBold',
   },
 });

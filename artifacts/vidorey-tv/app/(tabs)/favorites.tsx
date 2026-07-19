@@ -10,16 +10,17 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ChannelCard } from '@/components/ui/ChannelCard';
 import colors from '@/constants/colors';
 import { fontSize, spacing } from '@/constants/theme';
-import { getChannelById } from '@/lib/data';
+import { useChannelStore } from '@/lib/context/ChannelContext';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 
 export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
   const { favorites, toggle, isFavorite } = useFavorites();
+  const { channelMap } = useChannelStore();
 
   const favoriteChannels = favorites
-    .map((id) => getChannelById(id))
-    .filter(Boolean) as ReturnType<typeof getChannelById>[];
+    .map((id) => channelMap.get(id))
+    .filter(Boolean) as ReturnType<typeof channelMap.get>[];
 
   return (
     <View style={styles.root}>

@@ -13,10 +13,13 @@ import { ChannelCard } from '@/components/ui/ChannelCard';
 import { SearchBar } from '@/components/ui/SearchBar';
 import colors from '@/constants/colors';
 import { fontSize, radius, spacing } from '@/constants/theme';
-import { ALL_CHANNELS, CATEGORY_ORDER, CHANNELS_BY_CATEGORY } from '@/lib/data';
+import {
+  CATEGORIES,
+  useAllChannels,
+  useChannelStore,
+  useSearchChannels,
+} from '@/lib/context/ChannelContext';
 import type { CategoryId } from '@/lib/types/channel';
-import { CATEGORIES } from '@/lib/types/channel';
-import { useSearch } from '@/lib/hooks/useChannels';
 
 const ALL_KEY = 'all' as const;
 type FilterKey = CategoryId | typeof ALL_KEY;
@@ -24,11 +27,14 @@ type FilterKey = CategoryId | typeof ALL_KEY;
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const [activeFilter, setActiveFilter] = useState<FilterKey>(ALL_KEY);
-  const { query, setQuery, results: searchResults } = useSearch();
+  const [query, setQuery] = useState('');
+  const searchResults = useSearchChannels(query);
+  const allChannels = useAllChannels();
+  const { byCategory, categoryOrder } = useChannelStore();
 
   const filters: { key: FilterKey; label: string; emoji: string }[] = [
     { key: ALL_KEY, label: 'All', emoji: '✦' },
-    ...CATEGORY_ORDER.map((id) => ({
+    ...categoryOrder.map((id) => ({
       key: id as FilterKey,
       label: CATEGORIES[id].label,
       emoji: CATEGORIES[id].emoji,
@@ -37,15 +43,15 @@ export default function ExploreScreen() {
 
   const displayedChannels = useMemo(() => {
     if (query.trim()) return searchResults;
-    if (activeFilter === ALL_KEY) return ALL_CHANNELS;
-    return CHANNELS_BY_CATEGORY[activeFilter as CategoryId] ?? [];
-  }, [query, searchResults, activeFilter]);
+    if (activeFilter === ALL_KEY) return allChannels;
+    return byCategory[activeFilter as CategoryId] ?? [];
+  }, [query, searchResults, activeFilter, allChannels, byCategory]);
 
   return (
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <Text style={styles.title}>Explore</Text>
-        <Text style={styles.subtitle}>{ALL_CHANNELS.length} live channels</Text>
+        <Text style={styles.subtitle}>{allChannels.length} live channels</Text>
       </View>
 
       <SearchBar value={query} onChangeText={setQuery} />
@@ -95,7 +101,7 @@ export default function ExploreScreen() {
         <EmptyState
           emoji="🔍"
           title="No channels found"
-          subtitle={`No results for "${query}"`}
+          subtitle={query ? `No results for "${query}"` : 'No channels in this category'}
         />
       ) : (
         <FlatList

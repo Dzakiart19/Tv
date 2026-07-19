@@ -13,6 +13,7 @@ import {
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { ChannelProvider } from '@/lib/context/ChannelContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -62,10 +63,12 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <StatusBar style="light" />
-            <RootLayoutNav />
-          </GestureHandlerRootView>
+          <ChannelProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <StatusBar style="light" />
+              <RootLayoutNav />
+            </GestureHandlerRootView>
+          </ChannelProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
