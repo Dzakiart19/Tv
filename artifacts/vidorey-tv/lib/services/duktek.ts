@@ -28,14 +28,34 @@ export interface DuktekConfig {
 /** Fetch app config from duktek.id */
 export async function fetchDuktekConfig(): Promise<DuktekConfig> {
   const url = `${BASE_URL}/?device=${DEVICE}&is_genuine=${IS_GENUINE}`;
-  const response = await fetch(url, {
-    headers: BROWSER_HEADERS,
-    signal: AbortSignal.timeout(5_000),
-  });
-  if (!response.ok) throw new Error(`Config fetch failed: HTTP ${response.status}`);
-  const json = await response.json() as Record<string, unknown>;
+  console.log('[duktek] Fetching config:', url);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: BROWSER_HEADERS,
+      signal: AbortSignal.timeout(12_000),
+    });
+  } catch (e) {
+    console.error('[duktek] Network error:', e instanceof Error ? e.message : String(e));
+    throw e;
+  }
+  if (!response.ok) {
+    console.error('[duktek] HTTP error:', response.status, response.statusText);
+    throw new Error(`Config fetch failed: HTTP ${response.status}`);
+  }
+  const text = await response.text();
+  console.log('[duktek] Response (first 300 chars):', text.slice(0, 300));
+  let json: Record<string, unknown>;
+  try {
+    json = JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    console.error('[duktek] Response is not JSON. Content-type:', response.headers.get('content-type'));
+    throw new Error('duktek.id response is not JSON');
+  }
+  console.log('[duktek] JSON keys:', Object.keys(json).join(', '));
   // Validate it actually looks like a config (not an HTML error page)
   if (!json.channel_list_url && !json.premium_channel_list_url) {
+    console.error('[duktek] Missing channel_list_url. Full response:', JSON.stringify(json).slice(0, 500));
     throw new Error('Config response missing channel_list_url');
   }
   return json as DuktekConfig;

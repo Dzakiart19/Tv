@@ -47,10 +47,22 @@ Needs root-level `package.json` + `pnpm-workspace.yaml` (already created).
 - Reads `#EXTVLCOPT:http-referrer=` lines
 - Stores in channel.headers — player uses them automatically
 
-## Known Working Static URLs
+## IndiHome CDN note
+- `cdn09jtedge.indihometv.com/atm/hlsv3/{ch}/{ch}-avc1_1200000=4-mp4a.40.2_192000=2.m3u8`
+- Returns HTTP 200 but body = "No route" from ALL IPs — requires per-session auth token from duktek.id
+- DO NOT use as static URLs; only useful after duktek.id provides fresh tokens
+
+## Dead Domains (DNS fail)
+- `indihuy.streamized.net` — DNS fails completely, filtered in m3u-parser
+
+## iptv-org Category Fix
+- Indonesia list uses group-title "General"/"News" not "indonesia"
+- Pass `defaultCategory='indonesia'` to `parseChannelList(raw, 'indonesia')` for country playlists
+
+## Known Working Static URLs (publicly accessible, no auth)
 - TVRI: `ott-balancer.tvri.go.id` (all 30 regional stations) ✅
-- Trans7: `video.detik.com/trans7/smil:trans7.smil/chunklist.m3u8` ✅ (needs correct referer)
-- TransTV: `livestream.transtv.co.id/stream/live/ttv.m3u8` ✅
+- Trans7: `video.detik.com/trans7/smil:trans7.smil/playlist.m3u8` ✅ (playlist.m3u8 not chunklist)
+- TransTV: `video.detik.com/transtv/smil:transtv.smil/playlist.m3u8` ✅
 - Metro TV: `edge.medcom.id/live-edge/smil:metro.smil/playlist.m3u8` ✅
 - Red Bull TV: Akamaized CDN ✅
 - Arirang TV: amdlive-ch01.ctnd.com.edgesuite.net ✅

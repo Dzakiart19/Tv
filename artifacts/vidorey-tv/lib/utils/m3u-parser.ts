@@ -104,7 +104,16 @@ function slugify(str: string): string {
     .slice(0, 64);
 }
 
-export function parseM3U(content: string): Channel[] {
+// Domains known to have dead DNS or always return non-stream content
+const DEAD_DOMAINS = [
+  'indihuy.streamized.net',
+];
+
+function isDeadUrl(url: string): boolean {
+  return DEAD_DOMAINS.some((d) => url.includes(d));
+}
+
+export function parseM3U(content: string, defaultCategory?: import('../types/channel').CategoryId): Channel[] {
   const lines = content.split(/\r?\n/);
   const channels: Channel[] = [];
   const seenIds = new Set<string>();
@@ -152,8 +161,11 @@ export function parseM3U(content: string): Channel[] {
 
       if (!url) { i++; continue; }
 
+      // Skip channels from domains that have dead DNS or return non-stream content
+      if (isDeadUrl(url)) { i++; continue; }
+
       const displayName = tvgName || channelName || 'Unknown Channel';
-      const category = inferCategory(groupTitle);
+      const category = defaultCategory ?? inferCategory(groupTitle);
 
       // Build per-channel headers from EXTINF/EXTVLCOPT attributes
       const headers: Record<string, string> = {};
@@ -194,7 +206,7 @@ export function parseM3U(content: string): Channel[] {
  * Try to parse channel list as JSON first, then M3U.
  * Some providers return JSON arrays instead of M3U.
  */
-export function parseChannelList(content: string): Channel[] {
+export function parseChannelList(content: string, defaultCategory?: import('../types/channel').CategoryId): Channel[] {
   const trimmed = content.trim();
 
   // Try JSON
@@ -237,7 +249,7 @@ export function parseChannelList(content: string): Channel[] {
 
   // Try M3U
   if (trimmed.startsWith('#EXTM3U') || trimmed.includes('#EXTINF')) {
-    return parseM3U(trimmed);
+    return parseM3U(trimmed, defaultCategory);
   }
 
   return [];

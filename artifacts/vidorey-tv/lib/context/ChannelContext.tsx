@@ -118,11 +118,11 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       ]);
 
       const allDynamic: Channel[] = [];
-      for (const result of [idRaw, krRaw, myRaw]) {
-        if (result.status === 'fulfilled') {
-          allDynamic.push(...parseChannelList(result.value));
-        }
-      }
+      // Pass the country-specific defaultCategory so channels land in the right tab
+      // (iptv-org uses group-title "General"/"News" not "indonesia")
+      if (idRaw.status === 'fulfilled') allDynamic.push(...parseChannelList(idRaw.value, 'indonesia'));
+      if (krRaw.status === 'fulfilled') allDynamic.push(...parseChannelList(krRaw.value, 'korea'));
+      if (myRaw.status === 'fulfilled') allDynamic.push(...parseChannelList(myRaw.value, 'malaysia'));
 
       if (allDynamic.length > 0) {
         // Merge with static (TVRI, sports, world) to fill gaps
